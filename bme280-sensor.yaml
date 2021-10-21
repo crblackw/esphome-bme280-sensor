@@ -14,7 +14,7 @@ esphome:
   # configuration and updates.
   project:
     name: crblackw.bme280-sensor
-    version: "1.0.0"
+    version: "1.0.1"
 
 # Enable logging
 logger:
@@ -27,13 +27,13 @@ ota:
 
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://crblackw/esphome-bme280-sensor/bme280-sensor.yaml@v1.0.0
+  package_import_url: github://crblackw/esphome-bme280-sensor/bme280-sensor.yaml@v1.0.1
 
 wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Envsensor Fallback Hotspot"
-    password: !secret ap_password
+    password: "envsensor101"
 
 # In combination with the `ap` this allows the user
 # to provision wifi credentials to the device.
