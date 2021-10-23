@@ -1,7 +1,7 @@
 # These substitutions allow the end user to override certain values
 substitutions:
   name: "bme280-sensor"
-  my_ele: 0.6
+  my_ele: "0.6"
 
 esphome:
   name: "${name}"
@@ -17,11 +17,11 @@ esphome:
     name: crblackw.bme280-sensor
     version: "1.0.3"
 
-  globals:
-   - id: my_elevation
-     type: int
-     restore_value: yes
-     initial_value: ${my_ele}
+globals:
+  - id: my_elevation
+    type: int
+    restore_value: yes
+    initial_value: ${my_ele}
 
 # Enable logging
 logger:
