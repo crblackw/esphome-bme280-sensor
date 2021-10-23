@@ -17,7 +17,7 @@ esphome:
     name: crblackw.bme280-sensor
     version: "1.0.3"
 
- globals:
+  globals:
    - id: my_elevation
      type: int
      restore_value: yes
