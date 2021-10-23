@@ -1,6 +1,7 @@
 # These substitutions allow the end user to override certain values
 substitutions:
   name: "bme280-sensor"
+  my_ele: 0.6
 
 esphome:
   name: "${name}"
@@ -14,7 +15,13 @@ esphome:
   # configuration and updates.
   project:
     name: crblackw.bme280-sensor
-    version: "1.0.2"
+    version: "1.0.3"
+
+ globals:
+   - id: my_elevation
+     type: int
+     restore_value: yes
+     initial_value: ${my_ele}
 
 # Enable logging
 logger:
@@ -27,7 +34,7 @@ ota:
 
 # This should point to the public location of this yaml file.
 dashboard_import:
-  package_import_url: github://crblackw/esphome-bme280-sensor/bme280-sensor.yaml@v1.0.2
+  package_import_url: github://crblackw/esphome-bme280-sensor/bme280-sensor.yaml@v1.0.3
 
 wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
@@ -45,7 +52,7 @@ sensor:
   # Light sensor config
   - platform: adc
     pin: A0
-    name: "Outside Brightness"
+    name: "Brightness"
   # Environment sensor config
   - platform: bme280
     temperature:
@@ -59,3 +66,41 @@ sensor:
       id: bme280_humidity
     address: 0x76
     update_interval: 60s
+  # Environment sensor calculated variables
+  - platform: template
+    name: "Altitude"
+    lambda: |-
+      const float STANDARD_SEA_LEVEL_PRESSURE = 1013.25; //in hPa, see note
+      return ((id(bme280_temperature).state + 273.15) / 0.0065) *
+        (powf((STANDARD_SEA_LEVEL_PRESSURE / id(bme280_pressure).state), 0.190234) - 1); // in meter
+    update_interval: 15s
+    icon: 'mdi:signal'
+    unit_of_measurement: 'm'
+  - platform: template
+    name: "Absolute Humidity"
+    lambda: |-
+      const float mw = 18.01534;    // molar mass of water g/mol
+      const float r = 8.31447215;   // Universal gas constant J/mol/K
+      return (6.112 * powf(2.718281828, (17.67 * id(bme280_temperature).state) /
+        (id(bme280_temperature).state + 243.5)) * id(bme280_humidity).state * mw) /
+        ((273.15 + id(bme280_temperature).state) * r); // in grams/m^3
+    accuracy_decimals: 2
+    update_interval: 15s
+    icon: 'mdi:water'
+    unit_of_measurement: 'g/m³'
+  - platform: template
+    name: "Dew Point"
+    lambda: |-
+      return (243.5*(log(id(bme280_humidity).state/100)+((17.67*id(bme280_temperature).state)/
+      (243.5+id(bme280_temperature).state)))/(17.67-log(id(bme280_humidity).state/100)-
+      ((17.67*id(bme280_temperature).state)/(243.5+id(bme280_temperature).state))));
+    unit_of_measurement: °C
+    icon: 'mdi:thermometer-alert'
+  - platform: template
+    name: "Equivalent sea level pressure"
+    lambda: |-
+      const float STANDARD_ALTITUDE = id(my_elevation); // in meters, see note
+      return id(bme280_pressure).state / powf(1 - ((0.0065 * STANDARD_ALTITUDE) /
+        (id(bme280_temperature).state + (0.0065 * STANDARD_ALTITUDE) + 273.15)), 5.257); // in hPa
+    update_interval: 15s
+    unit_of_measurement: 'hPa'
